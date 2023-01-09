@@ -10,14 +10,7 @@ from data import mnist
 from model import MyAwesomeModel
 
 
-@click.group()
-def cli():
-    pass
-
-
-@click.command()
-@click.option("--lr", default=1e-3, help='learning rate to use for training')
-def train(lr):
+def train(lr=0.003):
     print("Training day and night")
     print(lr)
 
@@ -35,12 +28,13 @@ def train(lr):
 
     train_losses, test_losses = [], []
     for e in range(epochs):
+        print(e)
         running_loss = 0
         for batch in trainloader:
             #batch = next(iter(trainloader))
             images = batch[0]
             labels = batch[1]
-            images = images.resize_(images.size()[0], 784)
+            #images = images.resize_(images.size()[0], 784)
 
             optimizer.zero_grad()
 
@@ -53,10 +47,6 @@ def train(lr):
             
     torch.save(model.state_dict(), 'trained_model.pt')
 
-
-
-@click.command()
-@click.argument("model_checkpoint")
 def evaluate(model_checkpoint):
     print("Evaluating until hitting the ceiling")
     print(model_checkpoint)
@@ -81,7 +71,7 @@ def evaluate(model_checkpoint):
             #optimizer = optim.Adam(model.parameters(), lr=lr)
             
             n+=1
-            images = images.resize_(images.size()[0], 784)
+            #images = images.resize_(images.size()[0], 784)
 
             output = model.forward(images.float())
             test_loss += criterion(output, labels).item()
@@ -95,15 +85,24 @@ def evaluate(model_checkpoint):
             accuracy += equality.type_as(torch.FloatTensor()).mean()
         print(accuracy/n)
 
-train
+#train()
 
-cli.add_command(train)
-cli.add_command(evaluate)
+def firstPass():
+    model=MyAwesomeModel()
+    train, _ = mnist()
+    a=zip(train['images'], train['labels'].T)
+    trainloader=torch.utils.data.DataLoader(list(a), batch_size=64, shuffle=True)
 
+    image, label = next(iter(trainloader))
 
-if __name__ == "__main__":
-    cli()
+    criterion = nn.NLLLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.003)
+    #image = image.resize_(image.size()[0], 784)
+    #print(image.float().shape[1])
+    output = model.forward(image.float())
+    return output.shape
 
+#firstPass()
 
     
     
